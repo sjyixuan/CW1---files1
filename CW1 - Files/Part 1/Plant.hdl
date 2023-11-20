@@ -5,6 +5,10 @@ OUT F;
 PARTS:
 // Put your implementation here.
 
+Not(in = x, out = nx);
+Not(in = z, out = nz);
+And(a = nx, b = z, out = c);
+And(a = y, b = nz, out = d);
+Or(a = c, b = d, out = F);
 
 }
-
