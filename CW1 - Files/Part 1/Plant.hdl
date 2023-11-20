@@ -1,0 +1,10 @@
+CHIP Plant{
+IN x,y,z;
+OUT F;
+
+PARTS:
+// Put your implementation here.
+
+
+}
+
