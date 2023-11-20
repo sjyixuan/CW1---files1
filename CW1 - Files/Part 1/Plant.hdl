@@ -1,3 +1,5 @@
+//simplified boolean function: F(x,y,z) = x'z + yz'
+
 CHIP Plant{
 IN x,y,z;
 OUT F;
