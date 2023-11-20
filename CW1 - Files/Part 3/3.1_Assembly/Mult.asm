@@ -7,7 +7,7 @@
 // (R1, R2, R3 refer to RAM[1], RAM[2], and RAM[3], respectively.)
 // The algorithm is based on repetitive addition.
 
-// put your code here 
+// put your code here
 
 
 // Initialize R3 to 0
