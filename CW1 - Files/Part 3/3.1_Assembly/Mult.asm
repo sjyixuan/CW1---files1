@@ -20,13 +20,13 @@ M=0
    @R2
    D=M
    @END
-   D;JEQ
+   D;JEQ // If R2 is 0, jump to the END of the program
 
    // Add R1 to R3
    @R1
    D=M
    @R3
-   M=D+M
+   M=D+M // Add the value in R1 to the current value in R3
 
    // Decrement R2 (counter)
    @R2
