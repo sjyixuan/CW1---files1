@@ -39,21 +39,52 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Implement the CPU based on its following functionalities
 
+    // Multiplexor to select between ALUout and instruction based on the value of instruction[15]
+    Mux16(a=instruction, b=ALUout, sel=instruction[15], out=Ain);
 
-    // Instruction decode
+    // Invert the value of instruction[15]
+    Not(in=instruction[15], out=notinstruction);
 
+    // Control logic for loading the A register based on instruction[5]
+    Or(a=notinstruction, b=instruction[5], out=loadA);
+    ARegister(in=Ain, load=loadA, out=Aout, out[0..14]=addressM);
 
-    // A register and input mux
+    // Multiplexor to select between Aout and inM based on instruction[12]
+    Mux16(a=Aout, b=inM, sel=instruction[12], out=AMout);
 
-    
-    // D register
-    
+    // Control bits for the ALU
+    And(a=instruction[11], b=instruction[15], out=zx);  // Zero the x input
+    And(a=instruction[10], b=instruction[15], out=nx);  // Invert the x input
+    Or(a=instruction[9], b=notinstruction, out=zy);    // Zero the y input
+    Or(a=instruction[8], b=notinstruction, out=ny);    // Invert the y input
+    And(a=instruction[7], b=instruction[15], out=f);   // Function bit
+    And(a=instruction[6], b=instruction[15], out=no);  // Negate output bit
 
-    // ALU and input mux
- 
+    // ALU operation
+    ALU(x=Dout, y=AMout, zx=zx, nx=nx, zy=zy, ny=ny, f=f, no=no, out=outM, out=ALUout, zr=zero, ng=neg);
 
-    // PC with jump test
+    // Control bit for writing to memory
+    And(a=instruction[15], b=instruction[3], out=writeM);
+
+    // Control bit for loading the D register
+    And(a=instruction[15], b=instruction[4], out=loadD);
+    DRegister(in=ALUout, load=loadD, out=Dout);
+
+    // Control logic for jump conditions
+    Or(a=zero, b=neg, out=notpos);
+    Not(in=notpos, out=pos);
+
+    And(a=instruction[0], b=pos, out=j3);  // Jump condition bit 3
+    And(a=instruction[1], b=zero, out=j2); // Jump condition bit 2
+    And(a=instruction[2], b=neg, out=j1);  // Jump condition bit 1
+
+    Or(a=j1, b=j2, out=j12);
+    Or(a=j12, b=j3, out=j123);
+
+    And(a=j123, b=instruction[15], out=jump);
+
+    // Program Counter (PC) logic
+    PC(in=Aout, load=jump, reset=reset, inc=true, out[0..14]=pc);
    
 }
