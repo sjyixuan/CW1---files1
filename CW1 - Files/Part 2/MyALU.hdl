@@ -35,53 +35,63 @@ CHIP MyALU {
 
    Inc16(in=nx, out=negatedx);
    Inc16(in=ny, out=negatedy); 
-   //Inc16(in=ntr,out=negatntr);
+   
 
    Inc16(in=x, out=xplusone);
    Inc16(in=y, out=yplusone);
    
+   Add16(a=x,b=negatedx,out=xminusone);
+   Add16(a=y,b=negatedx,out=yminusone);
+
+
    Add16(a=x,b=y,out=xplusy);
+
+   Add16(a=x,b=negatedy,out=xminusy);
+   Add16(a=y,b=negatedx,out=yminusx);
 
    And16(a=x,b=y,out=xandy);
 
    Or16(a=x,b=y,out=xory);
-   //Xor8(a=x[0..7],b=y[0..7],out=xor1);
-   //Xor8(a=x[8..15],b=y[8..15],out=xor2);
-    And16(a=x, b=y, out=xor1);
-    Not16(in=xor1, out=xor2);
-    Or16(a=x, b=y, out=xor3);
-    And16(a=xor2, b=xor3, out=xxory);
 
-   Mux(a=false,b=true,sel=C0,out=output1);
-   Mux(a=negatntr,b=x,sel=C0,out=output2);
-   Mux(a=ouput1,b=output2,sel=C1,out=output3);
+   And16(a=x, b=y, out=xor1);
+   Not16(in=xor1, out=xor2);
+   Or16(a=x, b=y, out=xor3);
+   And16(a=xor2, b=xor3, out=xxory);
 
-   Mux(a=y,b=nx,sel=C0,out=output4);
-   Mux(a=ny,b=negatedx, sel=C0,out=output5);
-   Mux(a=ouput4,b=output5,sel=C1,out=output6);
+   Mux16(a=false,b=true,sel=C0,out=output1);
+   Mux16(a=negatedx,b=x,sel=C0,out=output2);
+   Mux16(a=output1,b=output2,sel=C1,out=output3);
 
-
-   Mux(a=negatedy,b=xadded,sel=C0,out=output7);
-   Mux(a=yadded,b=xminusone, sel=C0,out=output8);
-   Mux(a=ouput7,b=output8,sel=C1,out=output9);
-
-   Mux(a=yminusone,b=xplusy,sel=C0,out=output10);
-   Mux(a=xmiunsy,b=yminusx, sel=C0,out=output11);
-   Mux(a=ouput10,b=output11,sel=C1,out=output12);
-
-   Mux(a=xandy,b=xory,sel=C0,out=output13);
-   Mux(a=xxory,b=false, sel=C0,out=output14);
-   Mux(a=ouput13,b=output14,sel=C1,out=output15);
+   Mux16(a=y,b=nx,sel=C0,out=output4);
+   Mux16(a=ny,b=negatedx, sel=C0,out=output5);
+   Mux16(a=output4,b=output5,sel=C1,out=output6);
 
 
-   Mux(a=output3,b=output6,sel=C2,out=output16);
-   Mux(a=output9,b=output12,sel=C2,out=output17);
-   Mux(a=ouput16,b=output17,sel=C3,out=output18);
+   Mux16(a=negatedy,b=xplusone,sel=C0,out=output7);
+   Mux16(a=yplusone,b=xminusone, sel=C0,out=output8);
+   Mux16(a=output7,b=output8,sel=C1,out=output9);
 
-   Mux(a=output18,b=output15,sel=C4,out=out);
+   Mux16(a=yminusone,b=xplusy,sel=C0,out=output10);
+   Mux16(a=xminusy,b=yminusx, sel=C0,out=output11);
+   Mux16(a=output10,b=output11,sel=C1,out=output12);
 
-   Or8Way(in=finalLeft,out=zrl);
-   Or8Way(in=finalRight,out=zrr);
-   Or(a=zrl,b=zrr,out=nzr);
-   Not(in=nzr,out=zr);
+   Mux16(a=xandy,b=xory,sel=C0,out=output13);
+   Mux16(a=xxory,b=false, sel=C0,out=output14);
+   Mux16(a=output13,b=output14,sel=C1,out=output15);
+
+
+   Mux16(a=output3,b=output6,sel=C2,out=output16);
+   Mux16(a=output9,b=output12,sel=C2,out=output17);
+   Mux16(a=output16,b=output17,sel=C3,out=output18);
+
+   Mux16(a=output18, b=output15, sel=C4, out=out);
+
+   // Or8Way(a = outone[0..7], b = outone[0..7], out = outone[0..7]);
+    //Or8Way(a = outone[8..15], b = outone[8..15], out = outone[8..15]);
+    //Or8Way(a = outone[0..7], b = outone[8..15], out = nzr);
+
+   //Or16(a=outone, b=)
+
+    //Not(in=nzr, out=zr);
+
 }
