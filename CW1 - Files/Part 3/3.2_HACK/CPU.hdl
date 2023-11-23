@@ -40,53 +40,47 @@ CHIP CPU {
 
     PARTS:
 
-    // Control bits
-    Not(in = instruction[15], out = isA);
-    Not(in = isA, out = isC);
+        // Control signals
+        Not(in = instruction[15], out = instructionA);
+        Not(in = instructionA, out = instructionC);
 
-    And(a = isC, b = instruction[5], out = isLoadALUOut);
+        And(a = instructionC, b = instruction[5], out = isLoadAluOut);
+        Mux16(a = instruction, b = outALU, sel = isLoadAluOut, out = inAR);
 
-    Or(a = isA, b = instruction[5], out = isLoadAR);
-    Or(a = isC, b = instruction[12], out = isLoadAR);
+        Or(a = instructionA, b = instruction[5], out = isLoadAR);
+        ARegister(in = inAR, load = isLoadAR, out = outAR, out[0..14] = addressM);
 
-    Mux16(a = instruction, b = outALU, sel = isLoadALUOut, out = inAR);
+        Mux16(a = outAR, b = inM, sel = instruction[12], out = outAM);
 
-    // A register
-    ARegister(in = inAR, load = isLoadAR, out = outAR, out[0..14] = addressM);
+        And(a = instructionC, b = instruction[3], out = writeM);
+        And(a = instruction[4], b = instructionC, out = isLoadDR); 
+        DRegister(in = outALU, load = isLoadDR, out = outDR);
 
-    // ALU input Mux
-    Mux16(a = outAR, b = inM, sel = instruction[12], out = outAM);
+        // ALU and jump logic
+        And(a = instructionC, b = instruction[6], out = no);
+        And(a = instructionC, b = instruction[7], out = f);
+        And(a = instructionC, b = instruction[8], out = ny);
+        And(a = instructionC, b = instruction[9], out = zy);
+        And(a = instructionC, b = instruction[10], out = nx);
+        And(a = instructionC, b = instruction[11], out = zx);
 
-    // ALU
-    ALU(x = outDR, y = outAM, zx = instruction[11], nx = instruction[10],
-        zy = instruction[9], ny = instruction[8], f = instruction[7],
-        no = instruction[6], out = outALU, zr = zr, ng = ng);
+        ALU(x = outDR, y = outAM, zx = zx, nx = nx, zy = zy, ny = ny, f = f, no = no, out = outALU, out = outM, zr = zr, ng = ng);
 
-    // Data Register
-    And(a = isC, b = instruction[4], out = isLoadDR);
-    DRegister(in = outALU, load = isLoadDR, out = outDR);
+        And(a = instructionC, b = instruction[0], out = isGT);
+        And(a = instructionC, b = instruction[1], out = isEQ);
+        And(a = instructionC, b = instruction[2], out = isLT);
 
-    // Jump conditions
-    And(a = isC, b = instruction[0], out = jGT);
-    And(a = isC, b = instruction[1], out = jEQ);
-    And(a = isC, b = instruction[2], out = jLT);
+        And(a = ng, b = isLT, out = isLtJump);
+        And(a = zr, b = isEQ, out = isEqJump);
 
-    // Jump logic
-    And(a = ng, b = jLT, out = isLTJump);
-    And(a = zr, b = jEQ, out = isEQJump);
+        Not(in = ng, out = notNg);
+        Not(in = zr, out = notZr);
+        And(a = notNg, b = notZr, out = isOutGt);
+        
+        And(a = isOutGt, b = isGT, out = isGtJump);
 
-    Not(in = ng, out = notNG);
-    Not(in = zr, out = notZR);
-    And(a = notNG, b = notZR, out = isOutGT);
+        Or(a = isLtJump, b = isEqJump, out = isJump);
+        Or(a = isJump, b = isGtJump, out = jump);
 
-    And(a = isOutGT, b = jGT, out = isGTJump);
-
-    Or(a = isLTJump, b = isEQJump, out = isJump);
-    Or(a = isJump, b = isGTJump, out = jump);
-
-    // Program Counter
-    PC(in = outAR, load = jump, inc = true, reset = reset, out[0..14] = pc);
-
-    // Memory write control
-    And(a = isC, b = instruction[3], out = writeM);
+        PC(in = outAR, load = jump, inc = true, reset = reset, out[0..14] = pc);
 }
