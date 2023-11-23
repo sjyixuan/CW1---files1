@@ -24,13 +24,12 @@ CHIP Computer {
 
 
     // CPU
-    CPU(instruction=instruction,reset=reset,inM=outMemo,outM=CPUoutM,writeM=wM,addressM=adM,pc=PC);
-    CPU (inM=outMemo, instruction=instruction, reset=reset, WriteM=wM, outM=CPUoutM, address=adM, pc=PC);
+    CPU (inM=outM, instruction=instruction, reset=reset, writeM=writeM, outM=CPUOut, addressM=addressM, pc=pc);
 
     // RAM
-    Memory(in=CPUoutM,load=wM,address=adM,out=outMemo);
+    Memory(in=CPUOut,load=writeM,address=addressM,out=outM);
 
     // ROM
-    ROM32K(address=PC,out=instruction);
+    ROM32K(address=pc,out=instruction);
 
 }
