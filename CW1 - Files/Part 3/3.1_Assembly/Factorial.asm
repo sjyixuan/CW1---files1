@@ -12,66 +12,73 @@
 
 // put your code here
 
+// Initialize R1 (RAM[1]) to 1, which will be used to store the factorial result.
 @R1
-M=1 // Store 1 into the memory of R1 
+M=1
 
-// If R0=0, then jump to END 
+// Check if the input (n) is less than or equal to 0, if true, jump to END.
 @R0
 D=M
 @END
 D;JLE
 
-// R1 = R0
+// Copy the value of R0 (n) to R1 (factorial result) as a starting point.
 @R0
 D=M
 @R1
 M=D
 
+// Label START: Begin the factorial calculation loop.
 (START)
-    // R3 = R1
+    // Copy the current factorial result (R1) to R3 for temporary storage.
     @R1
     D=M
     @R3
     M=D
-
-    // Store the value of R0 minus 1 into R2
+    
+    // Decrement the value of R0 (n) by 1.
     @R0
     D=M-1
     @R2
     M=D
+    
+    // If R0 (n) equals 0, jump to END to terminate the loop.
     @END
     D;JEQ
 
+// Label FACTOR: Perform the multiplication and continue the factorial calculation.
 (FACTOR)
-    // If the value of R2 minus 1 = 0, then jump to OUT
+    // If R2 (n-1) equals 0, jump to MINUS to handle the case where n is 1.
     @R2
     D=M-1
     @MINUS
     D;JEQ
 
-    // R3 = R3 + R1
+    // Add the current factorial result (R3) to R1.
     @R3
     D=M
     @R1
     M=M+D
 
-    // R2 = R2 - 1
+    // Decrement the value of R2 (n-1).
     @R2
     M=M-1
 
-    // Jump back to FACTOR
+    // Jump back to FACTOR to continue the loop.
     @FACTOR
     0;JMP
 
+// Label MINUS: Handle the case where n is 1.
 (MINUS)
-    // If R0 minus 1 is more than or equal to 0, jump back to START 
+    // Decrement the value of R0 (n) by 1.
     @R0
     M=M-1
+
+    // Jump back to START if R0 (n) is greater than or equal to 0.
     @START
     D;JGE
 
+// Label END: Terminate the program.
 (END)
-    // Infinite loop to halt the program
     @END
     0;JMP
-
