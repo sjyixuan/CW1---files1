@@ -27,21 +27,19 @@ CHIP Memory {
     OUT out[16];
 
     PARTS:
-   //put your codes here
+    //put your codes here
 
-   // Demultiplexer to select between loading RAM and memory-mapped I/O based on the most significant address bit.
-   DMux(in=load, sel=address[14], a=loadRAM16K, b=loadMap);
-   // Further demultiplexer to split memory-mapped I/O into screen and keyboard based on the next address bit.
-   DMux(in=loadMap, sel=address[13], a=loadScreenMap, b=loadKeyMap);
- 
-   // 16K RAM component for general-purpose memory storage.
-   RAM16K(in=in, load=loadRAM16K, address=address[0..13], out=ramOut);
-   // Memory-mapped I/O for screen access.
-   Screen(in=in, load=loadScreenMap, address=address[0..12], out=screenOut);
-   // Memory-mapped I/O for keyboard access.
-   Keyboard(out=keyboardOut);
-    
-   // 4-way multiplexer to select the output from RAM, screen, or keyboard based on the two most significant address bits.
-   Mux4Way16(a=ramOut, b=ramOut, c=screenOut, d=keyboardOut, sel=address[13..14], out=out);
+    // Data load mux
+    DMux4Way(a=load, sel=address[14], c=dataLoad, d=dataStore)
+
+    // Address MUX for screen memory mapping
+    Mux2Way16(a=addr[12..0], b=address[12..1], sel=address[13], out=addressOut)
+
+    // RAM and I/O Components
+    RAM8K(in=in, load=dataLoad, address=addressOut, out=outRAM)
+    RAM8K(in=in, load=dataStore, address=addressOut, out=outIO)
+
+    // Output MUX
+    Mux4Way16(a=outRAM, b=outIO, sel=address[14..13], out=out)
 
 }
