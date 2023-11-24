@@ -12,73 +12,111 @@
 
 // put your code here
 
-// Initialize R1 (RAM[1]) to 1, which will be used to store the factorial result.
-@R1
-M=1
+; Function to calculate the factorial of a given number n
+(factorial)
+ ; If n == 0, return 1
+ @R0
+ D=M
+ @END
+ D;JEQ      ; if D == 0, jump to END
 
-// Check if the input (n) is less than or equal to 0, if true, jump to END.
-@R0
-D=M
-@END
-D;JLE
+ ; Calculate n! = n * (n-1)!
+ @R0
+ D=M
+ @ARG
+ M=D
+ @ARG
+ M=M-1
+ @n_minus_1_factorial
+ D=A
+ @ARG
+ D=D-M
+ @STACK
+ D=D+A
+ @temp
+ M=D
+ @temp
+ D=M
+ @STACK
+ D=D+A
+ @RETURN
+ M=D
+ @STACK
+ D=M
+ @SP
+ M=D
+ @R14
+ M=D
+ @STACK
+ AM=M-1
+ D=M
+ @temp
+ M=D
+ @SP
+ D=M
+ @SP
+ M=D+1
+ @n_minus_1_factorial
+  0;JMP
 
-// Copy the value of R0 (n) to R1 (factorial result) as a starting point.
-@R0
-D=M
-@R1
-M=D
+(n_minus_1_factorial)
+ ; If n-1 == 0, return 1
+ @ARG
+ D=M
+ @END
+ D;JEQ      ; if D == 0, jump to END
 
-// Label START: Begin the factorial calculation loop.
-(START)
-    // Copy the current factorial result (R1) to R3 for temporary storage.
-    @R1
-    D=M
-    @R3
-    M=D
-    
-    // Decrement the value of R0 (n) by 1.
-    @R0
-    D=M-1
-    @R2
-    M=D
-    
-    // If R0 (n) equals 0, jump to END to terminate the loop.
-    @END
-    D;JEQ
+ ; Calculate (n-1)! = (n-1) * (n-2)!
+ @ARG
+ D=M
+ @ARG
+ M=D-1
+ @factorial
+ D=A
+ @ARG
+ D=D-M
+ @STACK
+ D=D+A
+ @temp
+ M=D
+ @temp
+ D=M
+ @STACK
+ D=D+A
+ @RETURN
+ M=D
+ @STACK
+ D=M
+ @SP
+ M=D
+ @R14
+ M=D
+ @STACK
+ AM=M-1
+ D=M
+ @temp
+ M=D
+ @SP
+ D=M
+ @SP
+ M=D+1
+ @factorial
+  0;JMP
 
-// Label FACTOR: Perform the multiplication and continue the factorial calculation.
-(FACTOR)
-    // If R2 (n-1) equals 0, jump to MINUS to handle the case where n is 1.
-    @R2
-    D=M-1
-    @MINUS
-    D;JEQ
-
-    // Add the current factorial result (R3) to R1.
-    @R3
-    D=M
-    @R1
-    M=M+D
-
-    // Decrement the value of R2 (n-1).
-    @R2
-    M=M-1
-
-    // Jump back to FACTOR to continue the loop.
-    @FACTOR
-    0;JMP
-
-// Label MINUS: Handle the case where n is 1.
-(MINUS)
-    // Decrement the value of R0 (n) by 1.
-    @R0
-    M=M-1
-
-    // Jump back to START if R0 (n) is greater than or equal to 0.
-    @START
-    D;JGE
-
-// Label END: Terminate the program.
 (END)
-    @END
-    0;JMP
+ ; Save the result to RAM[1]
+ @temp
+ D=M
+ @R1
+ M=D
+
+(RETURN)
+ ; Return to the caller
+ @SP
+ A=M
+ M=D
+ @SP
+ M=M+1
+ @R14
+ A=M
+  0;JMP
