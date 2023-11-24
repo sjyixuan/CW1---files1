@@ -40,23 +40,31 @@ CHIP CPU {
 
     PARTS:
 
-    // Control signals
+    // Decode instruction to determine if it's a load operation
     Not(in = instruction[15], out = instructionA);
     Not(in = instructionA, out = instructionC);
 
+    // Check if the instruction is a load operation for ALU
     And(a = instructionC, b = instruction[5], out = isLoadAluOut);
+    // Select input for ARegister based on loadALUOut
     Mux16(a = instruction, b = outALU, sel = isLoadAluOut, out = inAR);
 
+    // Check if the instruction is a load operation for ARegister
     Or(a = instructionA, b = instruction[5], out = isLoadAR);
+    // Update ARegister based on loadAR
     ARegister(in = inAR, load = isLoadAR, out = outAR, out[0..14] = addressM);
 
+    // Select input for ALU based on the output of ARegister and inM
     Mux16(a = outAR, b = inM, sel = instruction[12], out = outAM);
 
+    // Determine if the instruction requires writing to M
     And(a = instructionC, b = instruction[3], out = writeM);
+    // Determine if the instruction is a load operation for DRegister
     And(a = instruction[4], b = instructionC, out = isLoadDR); 
+    // Update DRegister based on loadDR
     DRegister(in = outALU, load = isLoadDR, out = outDR);
 
-    // ALU and jump logic
+    // Decode instruction to determine ALU control bits
     And(a = instructionC, b = instruction[6], out = no);
     And(a = instructionC, b = instruction[7], out = f);
     And(a = instructionC, b = instruction[8], out = ny);
@@ -64,23 +72,31 @@ CHIP CPU {
     And(a = instructionC, b = instruction[10], out = nx);
     And(a = instructionC, b = instruction[11], out = zx);
 
+    // Perform ALU operation based on control bits
     ALU(x = outDR, y = outAM, zx = zx, nx = nx, zy = zy, ny = ny, f = f, no = no, out = outALU, out = outM, zr = zr, ng = ng);
 
+    // Decode instruction to determine jump conditions
     And(a = instructionC, b = instruction[0], out = isGT);
     And(a = instructionC, b = instruction[1], out = isEQ);
     And(a = instructionC, b = instruction[2], out = isLT);
 
+    // Determine jump conditions based on ALU output
     And(a = ng, b = isLT, out = isLtJump);
     And(a = zr, b = isEQ, out = isEqJump);
 
+    // Compute final jump conditions
     Not(in = ng, out = notNg);
     Not(in = zr, out = notZr);
     And(a = notNg, b = notZr, out = isOutGt);
     
+    // Determine if the instruction is a jump greater than
     And(a = isOutGt, b = isGT, out = isGtJump);
 
+    // Combine jump conditions to determine if a jump is needed
     Or(a = isLtJump, b = isEqJump, out = isJump);
     Or(a = isJump, b = isGtJump, out = jump);
 
+    // Update program counter based on jump condition
     PC(in = outAR, load = jump, inc = true, reset = reset, out[0..14] = pc);
+
 }
