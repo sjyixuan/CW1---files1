@@ -119,5 +119,3 @@ Or(in=msb_low, b=msb_high, out=msb);  // OR the MSBs of both parts
 Or(in=msb, b=false, out=ng);
 
 }
-
-}
