@@ -29,10 +29,13 @@ CHIP MyALU {
         ng; // 1 if (out < 0),  0 otherwise
 
     PARTS:
-
    Not16(in=x, out=nx);
    Not16(in=y, out=ny);
 
+   
+   Add16(a=nx, b=x, out=minusone);
+   Add16(a=x, b=minusone, out=xminusone);
+   Add16(a=y, b=minusone, out=yminusone);
 
    Inc16(in=nx, out=negatedx);
    Inc16(in=ny, out=negatedy); 
@@ -40,9 +43,6 @@ CHIP MyALU {
 
    Inc16(in=x, out=xplusone);
    Inc16(in=y, out=yplusone);
-   
-   Add16(a=x,b=negatedx,out=xminusone);
-   Add16(a=y,b=negatedx,out=yminusone);
 
 
    Add16(a=x,b=y,out=xplusy);
@@ -60,7 +60,7 @@ CHIP MyALU {
    And16(a=xor2, b=xor3, out=xxory);
 
    Mux16(a=false,b=true,sel=C0,out=output1);
-   Mux16(a=negatedx,b=x,sel=C0,out=output2);
+   Mux16(a=minusone,b=x,sel=C0,out=output2);  //-1
    Mux16(a=output1,b=output2,sel=C1,out=output3);
 
    Mux16(a=y,b=nx,sel=C0,out=output4);
@@ -87,35 +87,17 @@ CHIP MyALU {
 
    Mux16(a=output18, b=output15, sel=C4, out=out, out[15]=firstOut,out[0..7]=finalLeft,out[8..15]=finalRight);
 
+
     //output==0 (zr)
-    //Or8Way(in=finalLeft, out=zrl);
-    //Or8Way(in=finalRight, out=zrr);
-    /Or(a=zrl, b=zrr, out=nzr);
-    //Not(in=nzr, out=zr);
+    Or8Way(in=finalLeft, out=zrl);
+    Or8Way(in=finalRight, out=zrr);
+    Or(a=zrl, b=zrr, out=nzr);
+    Not(in=nzr, out=zr);
 
-    // Calculate MSB separately
-    //Or8Way(in=finalLeft, out=msb_low);  // Identify MSB for the least significant bits
-    //Or8Way(in=finalRight, out=msb_high);  // Identify MSB for the most significant bits
-
-    //Or(in=msb_low, b=msb_high, out=msb);  // OR the MSBs of both parts
+    Not(in=firstOut, out=msb);  
 
     // Set ng to 1 if MSB is 1, indicating a negative number
-    //Or(in=msb, b=false, out=ng);
-
-
-//output==0 (zr)
-Or8Way(in=finalLeft, out=zrl);
-Or8Way(in=finalRight, out=zrr);
-Or(a=zrl, b=zrr, out=nzr);
-Not(in=nzr, out=zr);
-
-// Calculate MSB separately
-Or8Way(in=finalLeft, out=msb_low);  // Identify MSB for the least significant bits
-Or8Way(in=finalRight, out=msb_high);  // Identify MSB for the most significant bits
-
-Or(in=msb_low, b=msb_high, out=msb);  // OR the MSBs of both parts
-
-// Set ng to 1 if MSB is 1, indicating a negative number
-Or(in=msb, b=false, out=ng);
+    Or(a=msb, b=false, out=nng);
+    Not(in=nng,out=ng);
 
 }
