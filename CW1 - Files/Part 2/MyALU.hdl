@@ -29,7 +29,8 @@ CHIP MyALU {
         ng; // 1 if (out < 0),  0 otherwise
 
     PARTS:
-    Not16(in=x, out=nx);
+
+   Not16(in=x, out=nx);
    Not16(in=y, out=ny);
 
 
@@ -84,14 +85,39 @@ CHIP MyALU {
    Mux16(a=output9,b=output12,sel=C2,out=output17);
    Mux16(a=output16,b=output17,sel=C3,out=output18);
 
-   Mux16(a=output18, b=output15, sel=C4, out=out);
+   Mux16(a=output18, b=output15, sel=C4, out=out, out[15]=firstOut,out[0..7]=finalLeft,out[8..15]=finalRight);
 
-   // Or8Way(a = outone[0..7], b = outone[0..7], out = outone[0..7]);
-    //Or8Way(a = outone[8..15], b = outone[8..15], out = outone[8..15]);
-    //Or8Way(a = outone[0..7], b = outone[8..15], out = nzr);
-
-   //Or16(a=outone, b=)
-
+    //output==0 (zr)
+    //Or8Way(in=finalLeft, out=zrl);
+    //Or8Way(in=finalRight, out=zrr);
+    /Or(a=zrl, b=zrr, out=nzr);
     //Not(in=nzr, out=zr);
+
+    // Calculate MSB separately
+    //Or8Way(in=finalLeft, out=msb_low);  // Identify MSB for the least significant bits
+    //Or8Way(in=finalRight, out=msb_high);  // Identify MSB for the most significant bits
+
+    //Or(in=msb_low, b=msb_high, out=msb);  // OR the MSBs of both parts
+
+    // Set ng to 1 if MSB is 1, indicating a negative number
+    //Or(in=msb, b=false, out=ng);
+
+
+//output==0 (zr)
+Or8Way(in=finalLeft, out=zrl);
+Or8Way(in=finalRight, out=zrr);
+Or(a=zrl, b=zrr, out=nzr);
+Not(in=nzr, out=zr);
+
+// Calculate MSB separately
+Or8Way(in=finalLeft, out=msb_low);  // Identify MSB for the least significant bits
+Or8Way(in=finalRight, out=msb_high);  // Identify MSB for the most significant bits
+
+Or(in=msb_low, b=msb_high, out=msb);  // OR the MSBs of both parts
+
+// Set ng to 1 if MSB is 1, indicating a negative number
+Or(in=msb, b=false, out=ng);
+
+}
 
 }
